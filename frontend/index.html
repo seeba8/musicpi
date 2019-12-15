@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="vue.js"></script>
+    <link rel="stylesheet" href="bulma.css">
+    <link rel="stylesheet" href="style.css">
+    <script defer src="main.js"></script>
+    <title>MusicPi</title>
+</head>
+
+<body>
+    <div id="app">
+        <!--<pre>{{ currentPath }}</pre>
+        <pre>{{ files }}</pre> -->
+        <div id="player" class="box" v-if="(state.paused !== undefined) && state.title !== null">
+            <span>
+                {{state.artist}} - {{state.title}}
+            </span>
+            <progress class="progress is-small" v-bind:value="state.current" v-bind:max="state.length" v-on:click="onProgressClick">{{state.current}}</progress>
+            <div class="buttons">
+                <button class="button" v-on:click="prev">&#x23EE;</button> <!-- Prev-->
+                <!-- <button class="column is-hidden" >&#x25b6;</button>-->
+                <!-- Play -->
+                <button class="button" v-on:click="pause">{{state.paused ? "\u25b6" : "\u23F8"}}</button> <!-- Pause -->
+                <button class="button" v-on:click="next">&#x23ED;</button> <!-- Next-->
+                <button class="button"v-on:click="stop">&#x23F9;</button> <!-- Stop -->
+               <!--  <button class="column">&#x1F500;</button> --> <!--Shuffle -->
+                <!--<button class="column">&#x1F501;</button> --> <!-- repeat -->
+            </div>
+        </div>
+
+        <p class="buttons has-addons">
+                <button v-on:click.stop="onGoUpClick" class="button is-small" :disabled="currentPath == rootfolder" >&larr; </button> <!--v-if="currentPath !== rootfolder"-->
+                <button class="button is-small is-static" >{{currentPath}}</button>
+                <button class="button is-small" v-on:click="onCurrentFolderPlay">&#x25b6;</button>
+        </p>
+        <ul id="ul_directories">
+            <li v-for="dir in directories" class="buttons has-addons are-small">
+                <button v-on:click="onPlayFolderClick" class="button is-marginless">&#x25b6;</button>
+                <button v-on:click.stop="onFolderClick" class="button is-marginless">{{ dir }}</button>
+            </li>
+        </ul>
+        <hr />
+        <ul id="ul_songs" class="buttons are-small">
+            <li v-for="song in files">
+                <button v-on:click="onPlaySongClick" class="button">{{ song }}</button>
+            </li>
+        </ul>
+    </div>
+
+</body>
+
+</html>

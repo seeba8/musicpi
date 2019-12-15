@@ -1,0 +1,13 @@
+# Installation instructions
+- Install 
+  - Python3
+  - usbmount
+  - Pip
+  - Mplayer
+  - Mplayer bindings: `pip install git+https://github.com/baudm/mplayer.py.git@0.7.2`
+  - Flask
+  - Flask-Cors
+- Configure
+  - Make `playlists` folder read-writeable
+  - Make `app.py` executable: `chmod +x app.py`
+  - ...

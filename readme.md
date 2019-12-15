@@ -2,12 +2,12 @@
 - Install 
   - Python3
   - git
-  - usbmount
+  - [usbmount](https://github.com/rbrito/usbmount/issues/25#issuecomment-518033241)
   - Pip3
   - Mplayer
   - Mplayer bindings: `pip install git+https://github.com/baudm/mplayer.py.git@0.7.2`
-  - Flask
-  - Flask-Cors
+  - Flask, Flask-Cors
+  - exfat-fuse, exfat-utils
 - Configure
   - Make `playlists` folder read-writeable: `mkdir playlists`
   - Make `app.py` executable: `chmod +x app.py`

@@ -7,7 +7,7 @@ let app = new Vue({
       currentPath: "/media",
       state: {},
       heartbeat: null,
-      
+      progressTicker: null,
     },
     filters: {
       pretty: function(value) {
@@ -17,7 +17,8 @@ let app = new Vue({
     },
     async mounted () {
       this.loadfolder(this.currentPath);
-      this.heartbeat = window.setInterval(this.sendHeartbeat,5000);
+      this.progressTicker = window.setInterval(this.updateProgressBar,100);
+      this.heartbeat = window.setInterval(this.sendHeartbeat,3000);
       this.sendHeartbeat();
     },
     methods: {
@@ -44,7 +45,7 @@ let app = new Vue({
       onPlayFolderClick: async function(event) {
         const resp = await fetch("/playfolder" + (this.currentPath.startsWith("/") ? "" : "/") 
                 + encodeURIComponent(this.currentPath + "/" 
-                + event.target.nextElementSibling.textContent.trim()));
+                + event.target.nextElementSibling.nextElementSibling.textContent.trim()));
         app.state = await resp.json();
       },
       onCurrentFolderPlay: async function(event) {
@@ -57,6 +58,7 @@ let app = new Vue({
         app.state = await resp.json();
       },
       sendHeartbeat: async function() {
+        if(document.hidden) return;
         const resp = await fetch("/heartbeat");
         const respObj = await resp.json();
         app.state = respObj;
@@ -81,6 +83,23 @@ let app = new Vue({
       },
       onGoUpClick: async function(event) {
         this.loadfolder(String(app.currentPath).slice(0,app.currentPath.lastIndexOf("/")));
-      },       
-    }
+      },   
+      onAddFolderClick: async function(event) {
+        const resp = await fetch("/appendfolder" + (this.currentPath.startsWith("/") ? "" : "/") 
+                + encodeURIComponent(this.currentPath + "/" 
+                + event.target.nextElementSibling.textContent.trim()));
+        app.state = await resp.json();
+      }  ,   
+      onAddCurrentFolderClick: async function(event) {
+        const resp = await fetch("/appendfolder" + (this.currentPath.startsWith("/") ? "" : "/") 
+        + encodeURIComponent(this.currentPath));
+        app.state = await resp.json();
+      },
+      updateProgressBar: function() {
+        if(!app.state.paused) {
+          app.state.current += .100;
+        }
+      },   
+    },
+
   });

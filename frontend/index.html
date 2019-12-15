@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="style.css">
     <script defer src="main.js"></script>
     <title>MusicPi</title>
+    <link rel="icon" href="resources/Notenschluessel.svg" typ="image/svg+xml" />
 </head>
 
 <body>
@@ -37,10 +38,12 @@
                 <button v-on:click.stop="onGoUpClick" class="button is-small" :disabled="currentPath == rootfolder" >&larr; </button> <!--v-if="currentPath !== rootfolder"-->
                 <button class="button is-small is-static" >{{currentPath}}</button>
                 <button class="button is-small" v-on:click="onCurrentFolderPlay">&#x25b6;</button>
+                <button v-on:click="onAddCurrentFolderClick" class="button is-small">&plus;</button>
         </p>
         <ul id="ul_directories">
             <li v-for="dir in directories" class="buttons has-addons are-small">
                 <button v-on:click="onPlayFolderClick" class="button is-marginless">&#x25b6;</button>
+                <button v-on:click="onAddFolderClick" class="button is-marginless">&plus;</button>
                 <button v-on:click.stop="onFolderClick" class="button is-marginless">{{ dir }}</button>
             </li>
         </ul>

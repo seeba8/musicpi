@@ -25,8 +25,8 @@ def show_subpath(subpath):
     if not str(subpath).startswith(root) or ".." in str(subpath):
         subpath = root
     directory = {"directories": [], "files": [], "path": subpath}
-    for (_, dirnames, filenames) in os.walk(subpath):
-        directory["directories"] = dirnames
+    for (dirpath, dirnames, filenames) in os.walk(subpath):
+        directory["directories"] = [d for d in dirnames if len(os.listdir(dirpath + os.sep + d)) > 0]
         directory["files"] = [file for file in filenames if file[file.rfind(".")+1:] in allowed_extensions] # file.endswith(".mp3")
         break
     return Response(json.dumps(directory,separators=None),mimetype="text/json")
@@ -49,7 +49,7 @@ def playsong(subpath):
 
 @app.route('/playfolder/<path:subpath>')
 @cross_origin()
-def playfolder(subpath):
+def playfolder(subpath, append=0):
     if not str(subpath).startswith("/"):
         subpath =  "/" + subpath
     subpath = os.path.normpath(urllib.parse.unquote(subpath))
@@ -59,10 +59,13 @@ def playfolder(subpath):
         global player 
         if player is None:
             player = mplayer.Player()
-        player.loadlist(playlist_path)
-        if player.paused:
-            player.pause()
+        player.loadlist(playlist_path, append)
     return getHeartbeat()
+
+@app.route('/appendfolder/<path:subpath>')
+@cross_origin()
+def appendfolder(subpath):
+    return playfolder(subpath, 1)
 
 def create_playlist(folder):
     dirname = os.path.dirname(__file__)
@@ -82,14 +85,20 @@ def getHeartbeat():
     metadata = {}
     if player.metadata is not None:
         metadata = player.metadata
-    return json.dumps({
-        "title": metadata.get('Title', player.filename),
-        "artist": metadata.get('Artist', 'Unknown artist'),
-        "album": metadata.get('Album', 'Unknown album'),
+    return_obj = {
+        "title": player.filename,
+        "artist": 'Unknown artist',
+        "album": 'Unknown album',
         "length": player.length,
         "current": player.time_pos,
         "paused": player.paused,
-    })
+    }
+    try:
+        return_obj["title"] = metadata.get('Title', player.filename)
+        return_obj["artist"] = metadata.get('Artist', 'Unknown artist')
+        return_obj["album"] = metadata.get('Album', 'Unknown album')
+    finally:
+        return json.dumps(return_obj)
 
 @app.route('/pause')
 @cross_origin()

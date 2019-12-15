@@ -11,4 +11,3 @@
 - Configure
   - Make `playlists` folder read-writeable
   - Make `app.py` executable: `chmod +x app.py`
-  - Edit `/etc/usbmount/usbmount.conf` to contain exfat as valid file system

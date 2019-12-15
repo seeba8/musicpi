@@ -38,7 +38,7 @@ def playsong(subpath):
         subpath =  "/" + subpath
     subpath = os.path.normpath(urllib.parse.unquote(subpath))
     print(str(subpath))
-    if os.path.isfile(subpath) and subpath.endswith(".mp3"):
+    if os.path.isfile(subpath) and subpath[subpath.rfind(".")+1:] in allowed_extensions:
         global player 
         if player is None:
             player = mplayer.Player()

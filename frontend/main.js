@@ -36,15 +36,20 @@ let app = new Vue({
         this.loadfolder(this.currentPath + '/' + event.target.textContent);
       },
       onPlaySongClick: async function(event) {
-        let resp = await fetch("/playsong" + (this.currentPath.startsWith("/") ? "" : "/") + this.currentPath + "/" + event.target.textContent.trim());
+        let resp = await fetch("/playsong" + (this.currentPath.startsWith("/") ? "" : "/") 
+                + encodeURIComponent(this.currentPath + "/" 
+                + event.target.textContent.trim()));
         app.state = await resp.json();
       },
       onPlayFolderClick: async function(event) {
-        const resp = await fetch("/playfolder" + (this.currentPath.startsWith("/") ? "" : "/") + this.currentPath + "/" + event.target.nextElementSibling.textContent.trim());
+        const resp = await fetch("/playfolder" + (this.currentPath.startsWith("/") ? "" : "/") 
+                + encodeURIComponent(this.currentPath + "/" 
+                + event.target.nextElementSibling.textContent.trim()));
         app.state = await resp.json();
       },
       onCurrentFolderPlay: async function(event) {
-        const resp = await fetch("/playfolder" + (this.currentPath.startsWith("/") ? "" : "/") + this.currentPath);
+        const resp = await fetch("/playfolder" + (this.currentPath.startsWith("/") ? "" : "/") 
+                + encodeURIComponent(this.currentPath));
         app.state = await resp.json();
       },
       pause: async function(event) {
@@ -76,7 +81,6 @@ let app = new Vue({
       },
       onGoUpClick: async function(event) {
         this.loadfolder(String(app.currentPath).slice(0,app.currentPath.lastIndexOf("/")));
-      }
-      
+      },       
     }
   });

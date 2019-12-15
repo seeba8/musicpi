@@ -9,6 +9,10 @@
   - Flask
   - Flask-Cors
 - Configure
-  - Make `playlists` folder read-writeable
+  - Make `playlists` folder read-writeable: `mkdir playlists`
   - Make `app.py` executable: `chmod +x app.py`
-  - ...
+  - `/lib/systemd/system/systemd-udevd.service`: `PrivateMounts: no`
+  - copy musicpi.service to `/lib/systemd/system/musicpi.service`
+  - `sudo systemctl daemon-reload` && `sudo systemctl enable musicpi.service`
+  - to start immediately: `sudo systemctl start musicpi.service`
+  - To view logs: `journalctl -u musicpi.service`

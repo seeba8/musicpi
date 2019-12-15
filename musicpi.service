@@ -1,0 +1,10 @@
+[Unit]
+Description=Service to start the MusicPi backend
+After=multi-user.target
+
+[Service]
+User=pi
+ExecStart=/usr/bin/python3 /home/pi/musicpi/backend/app.py
+
+[Install]
+WantedBy=multi-user.target

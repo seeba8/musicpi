@@ -2,7 +2,7 @@
 - Install 
   - Python3
   - git
-  - usbmount
+  - [usbmount](https://github.com/rbrito/usbmount/issues/25#issuecomment-518033241)
   - Pip3
   - Mplayer
   - Mplayer bindings: `pip install git+https://github.com/baudm/mplayer.py.git@0.7.2`

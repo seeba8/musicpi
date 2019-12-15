@@ -1,8 +1,9 @@
 # Installation instructions
 - Install 
   - Python3
+  - git
   - usbmount
-  - Pip
+  - Pip3
   - Mplayer
   - Mplayer bindings: `pip install git+https://github.com/baudm/mplayer.py.git@0.7.2`
   - Flask

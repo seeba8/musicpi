@@ -11,7 +11,6 @@ let app = new Vue({
     },
     filters: {
       pretty: function(value) {
-        console.dir(value);
         return JSON.stringify(value, null, 2);
       }
     },
@@ -33,7 +32,6 @@ let app = new Vue({
         this.currentPath = respObj["path"];
       },
       onFolderClick: function(event) {
-        console.log(event);
         this.loadfolder(this.currentPath + '/' + event.target.textContent);
       },
       onPlaySongClick: async function(event) {
@@ -77,7 +75,6 @@ let app = new Vue({
       },
       onProgressClick: async function(event) {
         const targetProgress = Math.round(((event.pageX - event.target.offsetLeft) / event.target.offsetWidth)*100);
-        console.log(targetProgress);
         const resp = await fetch("/seek/" + targetProgress);
         app.state = await resp.json();
       },
@@ -89,7 +86,13 @@ let app = new Vue({
                 + encodeURIComponent(this.currentPath + "/" 
                 + event.target.nextElementSibling.textContent.trim()));
         app.state = await resp.json();
-      }  ,   
+      } ,  
+      onAddSongClick: async function(event) {
+        const resp = await fetch("/appendsong" + (this.currentPath.startsWith("/") ? "" : "/") 
+                 + encodeURIComponent(this.currentPath + "/" 
+                 + event.target.nextElementSibling.textContent.trim()));
+        app.state = await resp.json();
+      },
       onAddCurrentFolderClick: async function(event) {
         const resp = await fetch("/appendfolder" + (this.currentPath.startsWith("/") ? "" : "/") 
         + encodeURIComponent(this.currentPath));

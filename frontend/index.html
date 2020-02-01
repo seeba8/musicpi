@@ -48,8 +48,9 @@
             </li>
         </ul>
         <hr />
-        <ul id="ul_songs" class="buttons are-small">
-            <li v-for="song in files">
+        <ul id="ul_songs">
+            <li v-for="song in files" class="buttons has-addons are-small">
+                <button v-on:click="onAddSongClick" class="button">&plus;</button>
                 <button v-on:click="onPlaySongClick" class="button">{{ song }}</button>
             </li>
         </ul>

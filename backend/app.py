@@ -20,7 +20,7 @@ allowed_extensions = ["mp3", "aac", "ogg", "wav", "opus", "3gp", "flac", "m4a", 
 @app.route('/list/<path:subpath>')
 @cross_origin()
 def show_subpath(subpath):
-    if not str(subpath).startswith("/"):
+    if os.sep == "/" and not str(subpath).startswith("/"):
         subpath =  "/" + subpath
     if not str(subpath).startswith(root) or ".." in str(subpath):
         subpath = root
@@ -33,8 +33,8 @@ def show_subpath(subpath):
 
 @app.route('/playsong/<path:subpath>')
 @cross_origin()
-def playsong(subpath):
-    if not str(subpath).startswith("/"):
+def playsong(subpath, append=0):
+    if os.sep == "/" and not str(subpath).startswith("/"):
         subpath =  "/" + subpath
     subpath = os.path.normpath(urllib.parse.unquote(subpath))
     print(str(subpath))
@@ -42,7 +42,7 @@ def playsong(subpath):
         global player 
         if player is None:
             player = mplayer.Player()
-        player.loadfile(subpath)
+        player.loadfile(subpath, append)
         # if player.paused:
             # player.pause()
     return getHeartbeat()
@@ -50,7 +50,7 @@ def playsong(subpath):
 @app.route('/playfolder/<path:subpath>')
 @cross_origin()
 def playfolder(subpath, append=0):
-    if not str(subpath).startswith("/"):
+    if os.sep == "/" and not str(subpath).startswith("/"):
         subpath =  "/" + subpath
     subpath = os.path.normpath(urllib.parse.unquote(subpath))
     print(str(subpath))
@@ -67,13 +67,16 @@ def playfolder(subpath, append=0):
 def appendfolder(subpath):
     return playfolder(subpath, 1)
 
+@app.route('/appendsong/<path:subpath>')
+@cross_origin()
+def appendsong(subpath):
+    return playsong(subpath, 1)
+
 def create_playlist(folder):
     dirname = os.path.dirname(__file__)
     filename = os.path.join(dirname, "../playlists/" + hashlib.sha256(folder.encode("utf-8")).hexdigest() + ".m3u")
     with open(filename, "w") as playlist:
         for (dirpath, _, filenames) in os.walk(folder):
-            print(dirpath)
-            print(filenames)
             playlist.writelines([dirpath + os.sep + f + "\n" for f in filenames if f[f.rfind(".")+1:] in allowed_extensions])
     return filename
 

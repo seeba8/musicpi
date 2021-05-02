@@ -5,9 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="vue.js"></script>
-    <link rel="stylesheet" href="bulma.css">
+    <script src="resources/vue.js"></script>
+    <link rel="stylesheet" href="resources/bulma.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.webmanifest">
     <script defer src="main.js"></script>
     <title>MusicPi</title>
     <link rel="icon" href="resources/Notenschluessel.svg" typ="image/svg+xml" />
@@ -17,43 +18,83 @@
     <div id="app">
         <!--<pre>{{ currentPath }}</pre>
         <pre>{{ files }}</pre> -->
-        <div id="player" class="box" v-if="(state.paused !== undefined) && state.title !== null">
+        <div id="player" class="box">
+        <!--<div id="player" class="box" v-if="(state.paused !== undefined) && state.title !== null">-->
             <span>
                 {{state.artist}} - {{state.title}}
             </span>
-            <progress class="progress is-small" v-bind:value="state.current" v-bind:max="state.length" v-on:click="onProgressClick">{{state.current}}</progress>
+            <progress class="progress is-small" v-bind:value="state.current" v-bind:max="state.length"
+                v-on:click="onProgressClick">{{state.current}}</progress>
             <div class="buttons">
                 <button class="button" v-on:click="prev">&#x23EE;</button> <!-- Prev-->
                 <!-- <button class="column is-hidden" >&#x25b6;</button>-->
                 <!-- Play -->
                 <button class="button" v-on:click="pause">{{state.paused ? "\u25b6" : "\u23F8"}}</button> <!-- Pause -->
                 <button class="button" v-on:click="next">&#x23ED;</button> <!-- Next-->
-                <button class="button"v-on:click="stop">&#x23F9;</button> <!-- Stop -->
-               <!--  <button class="column">&#x1F500;</button> --> <!--Shuffle -->
-                <!--<button class="column">&#x1F501;</button> --> <!-- repeat -->
+                <button class="button" v-on:click="stop">&#x23F9;</button> <!-- Stop -->
+                <!--<label class="checkbox"><input type="checkbox" :checked="state.shuffle" v-on:change="onShuffleChange"/> Shuffle</label>-->
+                <div class="select"><select v-on:change="onChangePlayType">
+                    <option value="once" :selected="state.playtype == 'once'">Einmal</option>
+                    <option value="shuffle" :selected="state.playtype == 'shuffle'">Zufall</option>
+                    <option value="loop" :selected="state.playtype == 'loop'">Schleife</option>
+                </select></div>
+                <!--<button class="column">&#x1F501;</button> -->
+                <!-- repeat -->
             </div>
+           
         </div>
-
+        <!--
         <p class="buttons has-addons">
-                <button v-on:click.stop="onGoUpClick" class="button is-small" :disabled="currentPath == rootfolder" >&larr; </button> <!--v-if="currentPath !== rootfolder"-->
-                <button class="button is-small is-static" >{{currentPath}}</button>
-                <button class="button is-small" v-on:click="onCurrentFolderPlay">&#x25b6;</button>
-                <button v-on:click="onAddCurrentFolderClick" class="button is-small">&plus;</button>
+            <button v-on:click.stop="onGoUpClick" class="button is-small" :disabled="currentPath == rootfolder">&larr;
+            </button>
+            <button class="button is-small is-static">{{currentPath}}</button>
+            <button class="button is-small" v-on:click="onCurrentFolderPlay">&#x25b6;</button>
+            <button v-on:click="onAddCurrentFolderClick" class="button is-small">&plus;</button>
         </p>
-        <ul id="ul_directories">
-            <li v-for="dir in directories" class="buttons has-addons are-small">
-                <button v-on:click="onPlayFolderClick" class="button is-marginless">&#x25b6;</button>
-                <button v-on:click="onAddFolderClick" class="button is-marginless">&plus;</button>
-                <button v-on:click.stop="onFolderClick" class="button is-marginless">{{ dir }}</button>
-            </li>
-        </ul>
-        <hr />
-        <ul id="ul_songs">
-            <li v-for="song in files" class="buttons has-addons are-small">
-                <button v-on:click="onAddSongClick" class="button">&plus;</button>
-                <button v-on:click="onPlaySongClick" class="button">{{ song }}</button>
-            </li>
-        </ul>
+        -->
+        <nav class="breadcrumb" aria-label="breadcrumbs">
+            <ul>
+                <li v-bind:class="{'is-active': currentPath.endsWith(folder)}" v-for="(folder, index) in currentPath.slice(1).split('/')">
+                    <a v-on:click="breadcrumbClick" :data-pathindex="index">{{folder}}</a>
+                    <!--<button v-if="index === currentPath.slice(1).split('/').length - 1" class="button is-small" v-on:click="onCurrentFolderPlay">&#x25b6;</button>
+                    <button v-if="index === currentPath.slice(1).split('/').length - 1" v-on:click="onAddCurrentFolderClick" class="button is-small">&plus;</button>-->
+                </li>
+                
+            </ul>
+        </nav>
+        <div class="tabs">
+            <ul>
+                <li v-bind:class="{'is-active': tabDir}"><a v-on:click="showDirectories" >Directories</a></li>
+                <li v-bind:class="{'is-active': tabFiles}"><a v-on:click="showFiles">Songs</a></li>
+                <li v-bind:class="{'is-active': tabPlaylist}"><a v-on:click="showPlaylist">Playlist</a></li>
+            </ul>
+        </div>
+            <ul id="ul_directories" v-show="tabDir">
+                <li v-for="dir in directories" class="buttons has-addons are-small">
+                    <button :data-dirname="dir[0]" v-on:click="onPlayFolderClick" class="button is-marginless">&#x25b6;</button>
+                    <button :data-dirname="dir[0]" v-on:click="onAddFolderClick" class="button is-marginless">&plus;</button>
+                    <button :data-dirname="dir[0]" v-on:click.stop="onFolderClick" class="button is-marginless">{{ dir[1] + (dir[0] !== dir[1] ? ` (${dir[0]})` : '') }}</button>
+                </li>
+            </ul>
+
+            <ul id="ul_songs" v-show="tabFiles">
+                <li class="buttons has-addons are-small">
+                    <button class="button" v-on:click="onCurrentFolderPlay">&#x25b6; Play current folder</button>
+                    <button v-on:click="onAddCurrentFolderClick" class="button">&plus; Add to playlist</button>
+                </li>
+                <li v-for="song in files" class="buttons has-addons are-small">
+                    <button v-on:click="onAddSongClick" class="button">&plus;</button>
+                    <button v-on:click="onPlaySongClick" class="button">{{ song }}</button>
+                </li>
+            </ul>
+            <ul id="ul_playlist" v-show="tabPlaylist">
+                <li v-for="(song,index) in playlist">
+                    <a v-on:click="onPlaylistEntryClick" :data-index="index" v-bind:class="{'has-text-weight-bold': song.current}">{{song.artist}} -- {{song.title}}</a>
+                    <a class="delete" :data-index="index" v-on:click="onPlaylistEntryDelete"></a>
+                </li>
+            </ul>
+
+
     </div>
 
 </body>

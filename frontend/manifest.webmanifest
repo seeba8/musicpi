@@ -1,0 +1,16 @@
+{
+    "name": "MusicPi",
+    "short_name": "MusicPi",
+    "description": "MusicPi",
+    "icons": [
+      {
+        "src": "resources/Notenschluessel.svg",
+        "sizes": "72x72 192x192 512x512",
+         "type": "image/svg+xml"
+      }
+    ],
+    "start_url": "index.html",
+    "display": "standalone",
+    "theme_color": "#B12A34",
+    "background_color": "#B12A34"
+  }

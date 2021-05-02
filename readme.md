@@ -3,9 +3,11 @@
   - Python3
   - git
   - [usbmount](https://github.com/rbrito/usbmount/issues/25#issuecomment-518033241)
+    - configure ntfs and readonly if necessary in `/etc/usbmount/usbmount.conf`
+      - `MOUNTOPTIONS="noexec,nodev,noatime,nodiratime,ro"`
+      - `FILESYSTEMS="vfat ext2 ext3 ext4 hfsplus exfat ntfs fuseblk"` 
   - Pip3
-  - Mplayer
-  - Mplayer bindings: `pip install git+https://github.com/baudm/mplayer.py.git@0.7.2`
+  - [omxd](https://github.com/seeba8/omxd) (forked from https://github.com/subogero/omxd/ because of https://github.com/subogero/omxd/issues/81#issuecomment-655761214)
   - Flask, Flask-Cors
   - exfat-fuse, exfat-utils
 - Configure

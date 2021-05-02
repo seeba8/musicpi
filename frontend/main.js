@@ -8,6 +8,10 @@ let app = new Vue({
       state: {},
       heartbeat: null,
       progressTicker: null,
+      tabDir: true,
+      tabFiles: false,
+      tabPlaylist: false,
+      playlist: []
     },
     filters: {
       pretty: function(value) {
@@ -19,20 +23,28 @@ let app = new Vue({
       this.progressTicker = window.setInterval(this.updateProgressBar,100);
       this.heartbeat = window.setInterval(this.sendHeartbeat,3000);
       this.sendHeartbeat();
+      this.getPlaylist();
+      window.setInterval(this.getPlaylist, 10000);
     },
     methods: {
       loadfolder: async function (path) {
         if(path.startsWith("#")) path = path.substring(1);
         if(this.currentPath === undefined) this.currentPath = "";
         this.currentPath=path;
-        let resp = await fetch("/list" + (this.currentPath.startsWith("/") ? "" : "/") + this.currentPath);
+        let resp = await fetch("/list" + encodeURIComponent((this.currentPath.startsWith("/") ? "" : "/") + this.currentPath));
         const respObj = await resp.json();
         this.directories = respObj["directories"];
         this.files = respObj["files"];
         this.currentPath = respObj["path"];
+        if(this.directories.length === 0) {
+          this.showFiles();
+        }
+        if(this.files.length === 0) {
+          this.showDirectories();
+        }
       },
       onFolderClick: function(event) {
-        this.loadfolder(this.currentPath + '/' + event.target.textContent);
+        this.loadfolder(this.currentPath + '/' + event.target.dataset.dirname);
       },
       onPlaySongClick: async function(event) {
         let resp = await fetch("/playsong" + (this.currentPath.startsWith("/") ? "" : "/") 
@@ -43,7 +55,7 @@ let app = new Vue({
       onPlayFolderClick: async function(event) {
         const resp = await fetch("/playfolder" + (this.currentPath.startsWith("/") ? "" : "/") 
                 + encodeURIComponent(this.currentPath + "/" 
-                + event.target.nextElementSibling.nextElementSibling.textContent.trim()));
+                + event.target.dataset.dirname));
         app.state = await resp.json();
       },
       onCurrentFolderPlay: async function(event) {
@@ -60,7 +72,15 @@ let app = new Vue({
         const resp = await fetch("/heartbeat");
         const respObj = await resp.json();
         app.state = respObj;
+
       },
+      getPlaylist: async function() {
+        if(document.hidden) return;
+        const resp = await fetch("/playlist");
+        const respObj = await resp.json();
+        app.playlist = respObj;
+      },
+
       next: async function(event) {
         const resp = await fetch("/next");
         app.state = await resp.json();
@@ -84,7 +104,7 @@ let app = new Vue({
       onAddFolderClick: async function(event) {
         const resp = await fetch("/appendfolder" + (this.currentPath.startsWith("/") ? "" : "/") 
                 + encodeURIComponent(this.currentPath + "/" 
-                + event.target.nextElementSibling.textContent.trim()));
+                + event.target.dataset.dirname));
         app.state = await resp.json();
       } ,  
       onAddSongClick: async function(event) {
@@ -102,7 +122,45 @@ let app = new Vue({
         if(!app.state.paused) {
           app.state.current += .100;
         }
-      },   
+      }, 
+      showDirectories: function(event) {
+        app.tabDir = true;
+        app.tabFiles = false;
+        app.tabPlaylist = false;
+      },
+      showFiles: function(event) {
+        app.tabDir = false;
+        app.tabFiles = true;
+        app.tabPlaylist = false;
+      },
+      showPlaylist: function(event) {
+        app.tabDir = false;
+        app.tabFiles = false;
+        app.tabPlaylist = true;
+      },
+      breadcrumbClick: function(event) {
+        console.log(event.target.dataset.pathindex);
+        const finalIndex = String(app.currentPath).split("/",parseInt(event.target.dataset.pathindex)+2).join("/").length;
+        console.log(String(this.currentPath).slice(0,finalIndex));
+        this.loadfolder(String(this.currentPath).slice(0,finalIndex));
+      },
+      onPlaylistEntryClick: async function(event) {
+        const resp = await fetch("/jumptosong/" + encodeURIComponent(event.target.dataset.index));
+        app.state = await resp.json();
+        this.getPlaylist();
+      },
+      onPlaylistEntryDelete: async function(event) {
+        const resp = await fetch("/deletefromplaylist/" + encodeURIComponent(event.target.dataset.index));
+        app.state = await resp.json();
+        this.getPlaylist();
+      },
+      onChangePlayType: async function(event) {
+        const resp = await fetch("/playtype/" + encodeURI(event.target.value));
+        app.state = await resp.json();
+      }
     },
 
   });
+if("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
+}

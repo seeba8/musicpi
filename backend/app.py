@@ -16,7 +16,8 @@ app = Flask(__name__, static_folder="../frontend", static_url_path="")
 # sockets = Sockets(app)
 # player: mplayer.Player = None
 root = "/media"
-allowed_extensions = ["mp3", "aac", "ogg", "wav", "opus", "3gp", "flac", "m4a", "webm", "wma"]
+ALLOWED_EXTENSIONS = ["mp3", "aac", "ogg", "wav", "opus", "3gp", "flac", "m4a", "webm", "wma"]
+SEARCH_LIMIT = 50
 
 @app.route('/list/<path:subpath>')
 def show_subpath(subpath):
@@ -32,7 +33,7 @@ def show_subpath(subpath):
         for d in sorted(dirnames):
             if len(os.listdir(dirpath + os.sep + d)) > 0 and d != "System Volume Information":
                 directory["directories"].append((d, labels[str(dirpath + os.sep + d)] if str(dirpath + os.sep + d) in labels else d))
-        directory["files"] = [file for file in sorted(filenames) if file[file.rfind(".")+1:] in allowed_extensions] # file.endswith(".mp3")
+        directory["files"] = [file for file in sorted(filenames) if file[file.rfind(".")+1:] in ALLOWED_EXTENSIONS] # file.endswith(".mp3")
         break
     return Response(json.dumps(directory,separators=None),mimetype="text/json")
 
@@ -49,7 +50,7 @@ def playsong(subpath, append=0):
         subpath =  "/" + subpath
     subpath = os.path.normpath(urllib.parse.unquote(subpath))
     print(str(subpath))
-    if os.path.isfile(subpath) and subpath[subpath.rfind(".")+1:] in allowed_extensions:
+    if os.path.isfile(subpath) and subpath[subpath.rfind(".")+1:] in ALLOWED_EXTENSIONS:
         if append > 0:
             OMXD.append_to_playlist(subpath)
         else:
@@ -79,7 +80,7 @@ def appendsong(subpath):
 def create_playlist(folder):
     for (dirpath, _, filenames) in os.walk(folder):
         for f in filenames:
-            if f[f.rfind(".")+1:] in allowed_extensions:
+            if f[f.rfind(".")+1:] in ALLOWED_EXTENSIONS:
                 OMXD.append_to_playlist(dirpath + os.sep + f)
             #playlist.writelines([dirpath + os.sep + f + "\n" for f in filenames if f[f.rfind(".")+1:] in allowed_extensions])
 
@@ -103,12 +104,25 @@ def prev():
     OMXD.previous()
     return getHeartbeat()
 
+@app.route('/plus30')
+def plus30():
+    OMXD.plus30()
+    return getHeartbeat()
+
+@app.route('/minus30')
+def minus30():
+    OMXD.minus30()
+    return getHeartbeat()
 
 @app.route("/stop")
 def stop():
     OMXD.stop()
     return getHeartbeat()
 
+@app.route("/searchindex")
+def refresh_searchindex():
+    subprocess.Popen(["sudo updatedb"], shell=True)
+    return getHeartbeat()
 
 @app.route("/playlist")
 def get_playlist():
@@ -136,6 +150,17 @@ def heartbeat():
 def seek(percentage):
     #player.seek(percentage, 1)
     return getHeartbeat()
+
+@app.route("/search/<string:search>")
+def search(search):
+    extensions = "|".join(ALLOWED_EXTENSIONS)
+    results = subprocess.run(["locate", 
+                                "-i", "-l", str(SEARCH_LIMIT), 
+                                "--regex", search + ".*\\.({})".format(extensions) ], 
+                                capture_output=True).stdout.decode("utf-8").strip().split("\n")
+    print("search:" + search)
+    print(results)
+    return Response(json.dumps(results,separators=None), mimetype="text/json")
 
 @app.route("/playtype/<string:playtype>")
 def playtype(playtype):
@@ -166,9 +191,7 @@ if __name__ == "__main__":
     OMXD.stop()
 
 
-# Delete from playlist
 # insert/append to playlist
-# Click on playlist to jump there
 # omxd a {folder} adds entire folder... don't need to do it myself
 
 # for audioHAT, change omxd.c code from -olocal to -oalsa

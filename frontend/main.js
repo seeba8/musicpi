@@ -11,7 +11,10 @@ let app = new Vue({
       tabDir: true,
       tabFiles: false,
       tabPlaylist: false,
-      playlist: []
+      tabSearch: false,
+      playlist: [],
+      searchTerm: "",
+      searchResults: []
     },
     filters: {
       pretty: function(value) {
@@ -50,6 +53,12 @@ let app = new Vue({
         let resp = await fetch("/playsong" + (this.currentPath.startsWith("/") ? "" : "/") 
                 + encodeURIComponent(this.currentPath + "/" 
                 + event.target.textContent.trim()));
+        app.state = await resp.json();
+      },
+      onPlaySongFromSearch: async function(event) {
+        console.log(event.target.textContent.trim());
+        const url = "/playsong/" + encodeURIComponent(event.target.textContent.trim());
+        let resp = await fetch(url);
         app.state = await resp.json();
       },
       onPlayFolderClick: async function(event) {
@@ -113,6 +122,10 @@ let app = new Vue({
                  + event.target.nextElementSibling.textContent.trim()));
         app.state = await resp.json();
       },
+      onAddSongFromSearch: async function(event) {
+        const resp = await fetch("/appendsong/" + encodeURIComponent(event.target.nextElementSibling.textContent.trim()));
+        app.state = await resp.json();
+      },
       onAddCurrentFolderClick: async function(event) {
         const resp = await fetch("/appendfolder" + (this.currentPath.startsWith("/") ? "" : "/") 
         + encodeURIComponent(this.currentPath));
@@ -126,17 +139,26 @@ let app = new Vue({
       showDirectories: function(event) {
         app.tabDir = true;
         app.tabFiles = false;
+        app.tabSearch = false;
         app.tabPlaylist = false;
       },
       showFiles: function(event) {
         app.tabDir = false;
         app.tabFiles = true;
+        app.tabSearch = false;
         app.tabPlaylist = false;
       },
       showPlaylist: function(event) {
         app.tabDir = false;
         app.tabFiles = false;
+        app.tabSearch = false;
         app.tabPlaylist = true;
+      },
+      showSearch: function(event) {
+        app.tabDir = false;
+        app.tabFiles = false;
+        app.tabPlaylist = false;
+        app.tabSearch = true;
       },
       breadcrumbClick: function(event) {
         console.log(event.target.dataset.pathindex);
@@ -157,8 +179,26 @@ let app = new Vue({
       onChangePlayType: async function(event) {
         const resp = await fetch("/playtype/" + encodeURI(event.target.value));
         app.state = await resp.json();
+      },
+      onSearchSubmit: async function(event) {
+        const resp = await fetch("/search/" + encodeURIComponent(app.searchTerm));
+        const respObj = await resp.json();
+        app.searchResults = respObj;
+      },
+      plus30: async function() {
+        const resp = await fetch("/plus30");
+        app.state = await resp.json();
+      },
+      minus30: async function() {
+        const resp = await fetch("/minus30");
+        app.state = await resp.json();
+      },
+      onRefreshSearchIndex: async function() {
+        const resp = await fetch("/searchindex");
+        app.state = await resp.json();
       }
     },
+
 
   });
 if("serviceWorker" in navigator) {

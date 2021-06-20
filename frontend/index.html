@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <script src="resources/vue.js"></script>
+    <script src="resources/vue.min.js"></script>
     <link rel="stylesheet" href="resources/bulma.css">
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.webmanifest">
@@ -19,7 +19,7 @@
         <!--<pre>{{ currentPath }}</pre>
         <pre>{{ files }}</pre> -->
         <div id="player" class="box">
-        <!--<div id="player" class="box" v-if="(state.paused !== undefined) && state.title !== null">-->
+            <!--<div id="player" class="box" v-if="(state.paused !== undefined) && state.title !== null">-->
             <span>
                 {{state.artist}} - {{state.title}}
             </span>
@@ -27,21 +27,26 @@
                 v-on:click="onProgressClick">{{state.current}}</progress>
             <div class="buttons">
                 <button class="button" v-on:click="prev">&#x23EE;</button> <!-- Prev-->
+                <button class="button" v-on:click="minus30">-30s</button>
                 <!-- <button class="column is-hidden" >&#x25b6;</button>-->
                 <!-- Play -->
                 <button class="button" v-on:click="pause">{{state.paused ? "\u25b6" : "\u23F8"}}</button> <!-- Pause -->
+                <button class="button" v-on:click="plus30">+30s</button>
                 <button class="button" v-on:click="next">&#x23ED;</button> <!-- Next-->
                 <button class="button" v-on:click="stop">&#x23F9;</button> <!-- Stop -->
+            </div>
+            <div class="buttons">
                 <!--<label class="checkbox"><input type="checkbox" :checked="state.shuffle" v-on:change="onShuffleChange"/> Shuffle</label>-->
-                <div class="select"><select v-on:change="onChangePlayType">
-                    <option value="once" :selected="state.playtype == 'once'">Einmal</option>
-                    <option value="shuffle" :selected="state.playtype == 'shuffle'">Zufall</option>
-                    <option value="loop" :selected="state.playtype == 'loop'">Schleife</option>
-                </select></div>
+                <div class="select mr-2" style="top: -4px;"><select v-on:change="onChangePlayType">
+                        <option value="once" :selected="state.playtype == 'once'">Einmal</option>
+                        <option value="shuffle" :selected="state.playtype == 'shuffle'">Zufall</option>
+                        <option value="loop" :selected="state.playtype == 'loop'">Schleife</option>
+                    </select></div>
+                <button class="button" v-on:click="onRefreshSearchIndex">Suchindex</button>
                 <!--<button class="column">&#x1F501;</button> -->
                 <!-- repeat -->
             </div>
-           
+
         </div>
         <!--
         <p class="buttons has-addons">
@@ -54,45 +59,63 @@
         -->
         <nav class="breadcrumb" aria-label="breadcrumbs">
             <ul>
-                <li v-bind:class="{'is-active': currentPath.endsWith(folder)}" v-for="(folder, index) in currentPath.slice(1).split('/')">
+                <li v-bind:class="{'is-active': currentPath.endsWith(folder)}"
+                    v-for="(folder, index) in currentPath.slice(1).split('/')">
                     <a v-on:click="breadcrumbClick" :data-pathindex="index">{{folder}}</a>
                     <!--<button v-if="index === currentPath.slice(1).split('/').length - 1" class="button is-small" v-on:click="onCurrentFolderPlay">&#x25b6;</button>
                     <button v-if="index === currentPath.slice(1).split('/').length - 1" v-on:click="onAddCurrentFolderClick" class="button is-small">&plus;</button>-->
                 </li>
-                
+
             </ul>
         </nav>
         <div class="tabs">
             <ul>
-                <li v-bind:class="{'is-active': tabDir}"><a v-on:click="showDirectories" >Directories</a></li>
+                <li v-bind:class="{'is-active': tabDir}"><a v-on:click="showDirectories">Directories</a></li>
                 <li v-bind:class="{'is-active': tabFiles}"><a v-on:click="showFiles">Songs</a></li>
                 <li v-bind:class="{'is-active': tabPlaylist}"><a v-on:click="showPlaylist">Playlist</a></li>
+                <li v-bind:class="{'is-active': tabSearch}"><a v-on:click="showSearch">Search</a></li>
             </ul>
         </div>
-            <ul id="ul_directories" v-show="tabDir">
-                <li v-for="dir in directories" class="buttons has-addons are-small">
-                    <button :data-dirname="dir[0]" v-on:click="onPlayFolderClick" class="button is-marginless">&#x25b6;</button>
-                    <button :data-dirname="dir[0]" v-on:click="onAddFolderClick" class="button is-marginless">&plus;</button>
-                    <button :data-dirname="dir[0]" v-on:click.stop="onFolderClick" class="button is-marginless">{{ dir[1] + (dir[0] !== dir[1] ? ` (${dir[0]})` : '') }}</button>
-                </li>
-            </ul>
+        <ul id="ul_directories" v-show="tabDir">
+            <li v-for="dir in directories" class="buttons has-addons are-small">
+                <button :data-dirname="dir[0]" v-on:click="onPlayFolderClick"
+                    class="button is-marginless">&#x25b6;</button>
+                <button :data-dirname="dir[0]" v-on:click="onAddFolderClick"
+                    class="button is-marginless">&plus;</button>
+                <button :data-dirname="dir[0]" v-on:click.stop="onFolderClick" class="button is-marginless">{{ dir[1] +
+                    (dir[0] !== dir[1] ? ` (${dir[0]})` : '') }}</button>
+            </li>
+        </ul>
 
-            <ul id="ul_songs" v-show="tabFiles">
-                <li class="buttons has-addons are-small">
-                    <button class="button" v-on:click="onCurrentFolderPlay">&#x25b6; Play current folder</button>
-                    <button v-on:click="onAddCurrentFolderClick" class="button">&plus; Add to playlist</button>
-                </li>
-                <li v-for="song in files" class="buttons has-addons are-small">
-                    <button v-on:click="onAddSongClick" class="button">&plus;</button>
-                    <button v-on:click="onPlaySongClick" class="button">{{ song }}</button>
-                </li>
-            </ul>
-            <ul id="ul_playlist" v-show="tabPlaylist">
-                <li v-for="(song,index) in playlist">
-                    <a v-on:click="onPlaylistEntryClick" :data-index="index" v-bind:class="{'has-text-weight-bold': song.current}">{{song.artist}} -- {{song.title}}</a>
-                    <a class="delete" :data-index="index" v-on:click="onPlaylistEntryDelete"></a>
-                </li>
-            </ul>
+        <ul id="ul_songs" v-show="tabFiles">
+            <li class="buttons has-addons are-small">
+                <button class="button" v-on:click="onCurrentFolderPlay">&#x25b6; Play current folder</button>
+                <button v-on:click="onAddCurrentFolderClick" class="button">&plus; Add to playlist</button>
+            </li>
+            <li v-for="song in files" class="buttons has-addons are-small">
+                <button v-on:click="onAddSongClick" class="button">&plus;</button>
+                <button v-on:click="onPlaySongClick" class="button">{{ song }}</button>
+            </li>
+        </ul>
+        <ul id="ul_playlist" v-show="tabPlaylist">
+            <li v-for="(song,index) in playlist">
+                <a v-on:click="onPlaylistEntryClick" :data-index="index"
+                    v-bind:class="{'has-text-weight-bold': song.current}">{{song.artist}} -- {{song.title}}</a>
+                <a class="delete" :data-index="index" v-on:click="onPlaylistEntryDelete"></a>
+            </li>
+        </ul>
+        <ul id="ul_search" v-show="tabSearch">
+            <form id="form_search" v-on:submit.prevent="onSearchSubmit">
+                <label class="label">Search
+                    <input class="input" type="search" v-model="searchTerm">
+                </label>
+                <button type="submit" class="button is-primary" id="button_search">Search</button>
+            </form>
+            <li v-for="song in searchResults" class="buttons has-addons are-small">
+                <button v-on:click="onAddSongFromSearch" class="button">&plus;</button>
+                <button v-on:click="onPlaySongFromSearch" class="button">{{ song }}</button>
+            </li>
+        </ul>
 
 
     </div>

@@ -48,6 +48,12 @@ class OMXD:
     def next():
         OMXD._send_command("n")
 
+    def plus30():
+        OMXD._send_command("f")
+
+    def minus30():
+        OMXD._send_command("r")
+
     def get_song_info(filename):
         # print("|" + filename + "|")
         try:

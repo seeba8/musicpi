@@ -10,9 +10,13 @@
   - [omxd](https://github.com/seeba8/omxd) (forked from https://github.com/subogero/omxd/ because of https://github.com/subogero/omxd/issues/81#issuecomment-655761214)
   - Flask, Flask-Cors
   - exfat-fuse, exfat-utils
+  - mlocate
+  - omxplayer
 - Configure
-  - Make `playlists` folder read-writeable: `mkdir playlists`
+  - Make `playlists` folder read-writeable: `mkdir playlists`, `chmod +rw playlists`
   - Make `app.py` executable: `chmod +x app.py`
+  - `sudo nano /etc/updatedb.conf` -> remove `/media` from `prunepath`
+  - `sudo nano crontab -e` -- `@reboot /usr/bin/updatedb`
   - `/lib/systemd/system/systemd-udevd.service`: `PrivateMounts: no`
   - copy musicpi.service to `/lib/systemd/system/musicpi.service`
   - `sudo systemctl daemon-reload` && `sudo systemctl enable musicpi.service`

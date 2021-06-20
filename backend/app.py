@@ -17,7 +17,7 @@ app = Flask(__name__, static_folder="../frontend", static_url_path="")
 # player: mplayer.Player = None
 root = "/media"
 ALLOWED_EXTENSIONS = ["mp3", "aac", "ogg", "wav", "opus", "3gp", "flac", "m4a", "webm", "wma"]
-SEARCH_LIMIT = 50
+SEARCH_LIMIT = 200
 
 @app.route('/list/<path:subpath>')
 def show_subpath(subpath):

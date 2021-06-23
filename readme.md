@@ -13,6 +13,7 @@
   - mlocate
   - omxplayer
 - Configure
+  - `cd backend`, `python3 -m venv venv`
   - Make `playlists` folder read-writeable: `mkdir playlists`, `chmod +rw playlists`
   - Make `app.py` executable: `chmod +x app.py`
   - `sudo nano /etc/updatedb.conf` -> remove `/media` from `prunepath`

@@ -12,9 +12,13 @@ let app = new Vue({
       tabFiles: false,
       tabPlaylist: false,
       tabSearch: false,
+      tabRadio: false,
       playlist: [],
       searchTerm: "",
-      searchResults: []
+      searchResults: [],
+      urlAdded: "",
+      radioAdded: "",
+      radioList: [],
     },
     filters: {
       pretty: function(value) {
@@ -141,24 +145,36 @@ let app = new Vue({
         app.tabFiles = false;
         app.tabSearch = false;
         app.tabPlaylist = false;
+        app.tabRadio = false;
       },
       showFiles: function(event) {
         app.tabDir = false;
         app.tabFiles = true;
         app.tabSearch = false;
         app.tabPlaylist = false;
+        app.tabRadio = false;
       },
       showPlaylist: function(event) {
         app.tabDir = false;
         app.tabFiles = false;
         app.tabSearch = false;
         app.tabPlaylist = true;
+        app.tabRadio = false;
       },
       showSearch: function(event) {
         app.tabDir = false;
         app.tabFiles = false;
         app.tabPlaylist = false;
         app.tabSearch = true;
+        app.tabRadio = false;
+      },
+      showRadio: function(event) {
+        app.tabDir = false;
+        app.tabFiles = false;
+        app.tabPlaylist = false;
+        app.tabSearch = false;
+        app.tabRadio = true;
+        this.loadRadios();
       },
       breadcrumbClick: function(event) {
         console.log(event.target.dataset.pathindex);
@@ -196,6 +212,28 @@ let app = new Vue({
       onRefreshSearchIndex: async function() {
         const resp = await fetch("/searchindex");
         app.state = await resp.json();
+      },
+
+      onRadioSubmit: async function() {
+        console.log(app.urlAdded);
+        const resp = await fetch("/addradio/" + encodeURIComponent(app.radioAdded) + "/" + btoa(app.urlAdded));
+        app.radioList = await resp.json();
+      },
+
+      loadRadios: async function() {
+        const resp = await fetch("/listradios");
+        app.radioList = await resp.json();
+      },
+
+      onPlayRadio: async function(event) {
+        const url = "/playradio/" + encodeURIComponent(event.target.textContent.trim());
+        let resp = await fetch(url);
+        app.state = await resp.json();
+      },
+      onRadioDelete: async function(e) {
+        console.log(e);
+        const resp = await fetch("/deleteradio/" + encodeURIComponent(e.target.previousElementSibling.textContent.trim()));
+        app.radioList = await resp.json();
       }
     },
 

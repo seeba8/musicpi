@@ -74,6 +74,7 @@
                 <li v-bind:class="{'is-active': tabFiles}"><a v-on:click="showFiles">Songs</a></li>
                 <li v-bind:class="{'is-active': tabPlaylist}"><a v-on:click="showPlaylist">Playlist</a></li>
                 <li v-bind:class="{'is-active': tabSearch}"><a v-on:click="showSearch">Search</a></li>
+                <li v-bind:class="{'is-active': tabRadio}"><a v-on:click="showRadio">Radio</a></li>
             </ul>
         </div>
         <ul id="ul_directories" v-show="tabDir">
@@ -117,6 +118,22 @@
             </li>
         </ul>
 
+        <ul id="ul_radio" v-show="tabRadio"> 
+            <li v-for="radio in radioList" class="buttons has-addons are-small">
+                <button v-on:click="onPlayRadio" class="button">{{ radio }}</button>
+                <a class="delete" v-on:click="onRadioDelete"></a>
+            </li>
+
+            <form id="form_radio" v-on:submit.prevent="onRadioSubmit">
+                <label class="label">URL
+                    <input class="input" type="url" v-model="urlAdded">
+                </label>
+                <label class="label">Name
+                    <input class="input" type="text" v-model="radioAdded">
+                </label>
+                <button type="submit" class="button is-primary" id="button_search">Hinzufügen</button>
+            </form>
+        </ul>
 
     </div>
 

@@ -11,6 +11,7 @@ import json
 import subprocess
 import urllib.parse
 from omxd import OMXD
+import base64
 
 app = Flask(__name__, static_folder="../frontend", static_url_path="")
 # sockets = Sockets(app)
@@ -166,6 +167,47 @@ def search(search):
 def playtype(playtype):
     OMXD.set_playtype(playtype)
     return getHeartbeat()
+
+@app.route("/addradio/<name>/<url>")
+def add_radio(name, url):
+    url = base64.b64decode(url).decode("utf-8")
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, '../radios.json')
+    radios = {}
+    with open(filename, "r") as radio_file:
+        text = radio_file.read()
+        if len(text) > 0:
+            radios = json.loads(text)
+    radios[name] = url
+    with open(filename, "w") as radio_file:
+        radio_file.write(json.dumps(radios))
+    OMXD.load_radios()
+    OMXD.play_radio(name)
+    return list_radios()
+
+@app.route("/playradio/<string:name>")
+def play_radio(name):
+    OMXD.play_radio(name)
+    return getHeartbeat()
+
+@app.route("/listradios")
+def list_radios():
+    return json.dumps(list(OMXD.list_radios()))
+
+@app.route("/deleteradio/<string:name>")
+def delete_radio(name):
+    dirname = os.path.dirname(__file__)
+    filename = os.path.join(dirname, '../radios.json')
+    radios = {}
+    with open(filename, "r") as radio_file:
+        text = radio_file.read()
+        if len(text) > 0:
+            radios = json.loads(text)
+    radios.pop(name)
+    with open(filename, "w") as radio_file:
+        radio_file.write(json.dumps(radios))
+    OMXD.load_radios()
+    return list_radios()
 
 # @app.route("/shuffle")
 # def shuffle():

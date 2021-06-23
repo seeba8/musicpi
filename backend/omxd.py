@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 import eyed3
 import subprocess
+import os
+import json
+
 OMXCTL = "/var/run/omxctl"
 import re
 class OMXD: 
     playlist_cache = dict()
+    radio_list = dict()
 
     def get_playtype():
         p1 = subprocess.Popen(["grep", "m_list", "/var/log/omxlog"], stdout=subprocess.PIPE)
@@ -76,9 +80,16 @@ class OMXD:
 
     def get_status():
         raw = OMXD.get_status_raw()
-        pat = re.compile("(Playing|Paused) (\d+)\/(\d+) (.*)")
+        pat = re.compile("(Playing|Paused) (-?\d+)\/(-?\d+) (.*)")
         match = pat.match(raw)
         if match is not None:
+            if match.group(4) in OMXD.radio_list.values():
+                return {
+                    "title": list(OMXD.radio_list.keys())[list(OMXD.radio_list.values()).index(match.group(4))],
+                    "artist": '',
+                    "album": '',
+                    "length": 0,
+                }
             info = OMXD.get_song_info(match.group(4))
             info["current"] = int(match.group(2))
             info["paused"] = match.group(1) == "Paused"
@@ -115,6 +126,22 @@ class OMXD:
         else:
             OMXD._send_command("l")
 
+    def load_radios():
+        dirname = os.path.dirname(__file__)
+        filename = os.path.join(dirname, '../radios.json')
+        with open(filename, "r") as radio_file:
+            text = radio_file.read()
+            if len(text) > 0:
+                OMXD.radio_list = json.loads(text)
+    
+    def list_radios():
+        if len(OMXD.radio_list) == 0:
+            OMXD.load_radios()
+        return OMXD.radio_list.keys()
+
+    def play_radio(name):
+        if name in OMXD.radio_list:
+            OMXD._send_command("I", OMXD.radio_list[name])
 
     def _send_command(prefix, param=""):
         with open(OMXCTL, "w") as f:

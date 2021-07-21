@@ -70,14 +70,24 @@
         </nav>
         <div class="tabs">
             <ul>
-                <li v-bind:class="{'is-active': tabDir}"><a v-on:click="showDirectories">Directories</a></li>
-                <li v-bind:class="{'is-active': tabFiles}"><a v-on:click="showFiles">Songs</a></li>
+                <li v-bind:class="{'is-active': tabDir}"><a v-on:click="showDirectories">Ordner</a></li>
+                <li v-bind:class="{'is-active': tabFiles}"><a v-on:click="showFiles">Dateien</a></li>
                 <li v-bind:class="{'is-active': tabPlaylist}"><a v-on:click="showPlaylist">Playlist</a></li>
                 <li v-bind:class="{'is-active': tabSearch}"><a v-on:click="showSearch">Search</a></li>
                 <li v-bind:class="{'is-active': tabRadio}"><a v-on:click="showRadio">Radio</a></li>
             </ul>
         </div>
         <ul id="ul_directories" v-show="tabDir">
+            <div class="select mr-2" style="top: -4px;">
+                <select v-on:change="onChangeDisplayOrder">
+                    <option value="name" :selected="state.displayorder == 'name'">Name</option>
+                    <option value="created" :selected="state.displayorder == 'created'">Erstelldatum</option>
+                    <option value="modified" :selected="state.displayorder == 'modified'">&Auml;nderungsdatum</option>
+                </select>
+            </div>
+            <label class="label">Umkehren
+                <input type="checkbox" class="checkbox" v-model="state.reverseSort" v-on:change="onReverseSort" />
+            </label>
             <li v-for="dir in directories" class="buttons has-addons are-small">
                 <button :data-dirname="dir[0]" v-on:click="onPlayFolderClick"
                     class="button is-marginless">&#x25b6;</button>
@@ -89,9 +99,19 @@
         </ul>
 
         <ul id="ul_songs" v-show="tabFiles">
+            <div class="select mr-2" style="top: -4px;">
+                <select v-on:change="onChangeDisplayOrder">
+                    <option value="name" :selected="state.displayorder == 'name'">Name</option>
+                    <option value="created" :selected="state.displayorder == 'created'">Erstelldatum</option>
+                    <option value="modified" :selected="state.displayorder == 'modified'">&Auml;nderungsdatum</option>
+                </select>
+            </div>
+            <label class="label">Umkehren
+                <input type="checkbox" class="checkbox" v-model="state.reverseSort" v-on:change="onReverseSort" />
+            </label>
             <li class="buttons has-addons are-small">
-                <button class="button" v-on:click="onCurrentFolderPlay">&#x25b6; Play current folder</button>
-                <button v-on:click="onAddCurrentFolderClick" class="button">&plus; Add to playlist</button>
+                <button class="button" v-on:click="onCurrentFolderPlay">&#x25b6; Ordner abspielen</button>
+                <button v-on:click="onAddCurrentFolderClick" class="button">&plus; Zur Playlist hinzufügen</button>
             </li>
             <li v-for="song in files" class="buttons has-addons are-small">
                 <button v-on:click="onAddSongClick" class="button">&plus;</button>
@@ -110,7 +130,7 @@
                 <label class="label">Search
                     <input class="input" type="search" v-model="searchTerm">
                 </label>
-                <button type="submit" class="button is-primary" id="button_search">Search</button>
+                <button type="submit" class="button is-primary" id="button_search">Suchen</button>
             </form>
             <li v-for="song in searchResults" class="buttons has-addons are-small">
                 <button v-on:click="onAddSongFromSearch" class="button">&plus;</button>
@@ -118,7 +138,7 @@
             </li>
         </ul>
 
-        <ul id="ul_radio" v-show="tabRadio"> 
+        <ul id="ul_radio" v-show="tabRadio">
             <li v-for="radio in radioList" class="buttons has-addons are-small">
                 <button v-on:click="onPlayRadio" class="button">{{ radio }}</button>
                 <a class="delete" v-on:click="onRadioDelete"></a>

@@ -17,7 +17,7 @@
   - Make `playlists` folder read-writeable: `mkdir playlists`, `chmod +rw playlists`
   - Make `app.py` executable: `chmod +x app.py`
   - `sudo nano /etc/updatedb.conf` -> remove `/media` from `prunepath`
-  - `sudo nano crontab -e` -- `@reboot /usr/bin/updatedb`
+  - `sudo crontab -e` -- `@reboot /usr/bin/updatedb`
   - `/lib/systemd/system/systemd-udevd.service`: `PrivateMounts: no`
   - copy musicpi.service to `/lib/systemd/system/musicpi.service`
   - `sudo systemctl daemon-reload` && `sudo systemctl enable musicpi.service`

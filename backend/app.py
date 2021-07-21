@@ -20,6 +20,24 @@ root = "/media"
 ALLOWED_EXTENSIONS = ["mp3", "aac", "ogg", "wav", "opus", "3gp", "flac", "m4a", "webm", "wma"]
 SEARCH_LIMIT = 200
 
+def sort_by_name(d):
+    return str(d).lower()
+
+def sort_by_modified(d):
+    return -os.path.getmtime(d)
+
+def sort_by_created(d):
+    return -os.path.getctime(d)
+
+sort_functions = {
+    "name": sort_by_name,
+    "modified": sort_by_modified,
+    "created": sort_by_created
+}
+
+sort_order = "name"
+reverse_order = False
+
 @app.route('/list/<path:subpath>')
 def show_subpath(subpath):
     if os.sep == "/" and not str(subpath).startswith("/"):
@@ -28,13 +46,13 @@ def show_subpath(subpath):
         subpath = root
     directory = {"directories": [], "files": [], "path": subpath}
     labels = get_mount_labels()
-    print(labels)
     for (dirpath, dirnames, filenames) in os.walk(subpath):
         directory["directories"] = []
-        for d in sorted(dirnames):
+        for d in sorted(dirnames, key=lambda d: sort_functions[sort_order](dirpath + os.sep + d), reverse=reverse_order):
             if len(os.listdir(dirpath + os.sep + d)) > 0 and d != "System Volume Information":
                 directory["directories"].append((d, labels[str(dirpath + os.sep + d)] if str(dirpath + os.sep + d) in labels else d))
-        directory["files"] = [file for file in sorted(filenames) if file[file.rfind(".")+1:] in ALLOWED_EXTENSIONS] # file.endswith(".mp3")
+        directory["files"] = [file for file in sorted(filenames, key=lambda d: sort_functions[sort_order](dirpath + os.sep + d), reverse=reverse_order) 
+                    if file[file.rfind(".")+1:] in ALLOWED_EXTENSIONS] # file.endswith(".mp3")
         break
     return Response(json.dumps(directory,separators=None),mimetype="text/json")
 
@@ -87,7 +105,10 @@ def create_playlist(folder):
 
 
 def getHeartbeat():
-    return json.dumps(OMXD.get_status())
+    heartbeat = OMXD.get_status()
+    heartbeat["reverseSort"] = reverse_order
+    heartbeat["displayorder"] = sort_order
+    return json.dumps(heartbeat)
 
 @app.route('/pause')
 def pause():
@@ -168,6 +189,18 @@ def playtype(playtype):
     OMXD.set_playtype(playtype)
     return getHeartbeat()
 
+@app.route("/displayorder/<string:displayorder>")
+def displayorder(displayorder):
+    global sort_order
+    sort_order = displayorder if displayorder in sort_functions else "name"
+    return getHeartbeat()
+
+@app.route("/reverseorder/<string:reverseorder>")
+def reverseorder(reverseorder):
+    global reverse_order
+    reverse_order = reverseorder == "true"
+    return getHeartbeat()
+
 @app.route("/addradio/<name>/<url>")
 def add_radio(name, url):
     url = base64.b64decode(url).decode("utf-8")
@@ -219,12 +252,6 @@ def startpage():
     return send_file('../frontend/index.html')
 
 
-# @sockets.route("/player")
-# def echo_status(ws):
-#     while not ws.closed:
-#         message = ws.receive()
-#         print(message)
-#         ws.send(getHeartbeat())
 
 if __name__ == "__main__":
     OMXD.set_playtype("once")

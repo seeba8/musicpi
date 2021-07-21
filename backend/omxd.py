@@ -96,7 +96,7 @@ class OMXD:
             info["length"] = 60 if int(match.group(3)) == 0 else int(match.group(3))
             info["playtype"] = OMXD.get_playtype()
             return info
-        return raw
+        return {"message": raw}
     
     def get_status_raw():
         process = subprocess.Popen(["omxd", "S"], stdout=subprocess.PIPE)

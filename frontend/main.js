@@ -196,6 +196,16 @@ let app = new Vue({
         const resp = await fetch("/playtype/" + encodeURI(event.target.value));
         app.state = await resp.json();
       },
+      onChangeDisplayOrder: async function(event) {
+        const resp = await fetch("/displayorder/" + encodeURI(event.target.value));
+        app.state = await resp.json();
+        this.loadfolder(String(app.currentPath));
+      },
+      onReverseSort: async function(event) {
+        const resp = await fetch("/reverseorder/" + app.state.reverseSort);
+        app.state = await resp.json();
+        this.loadfolder(String(app.currentPath));
+      },
       onSearchSubmit: async function(event) {
         const resp = await fetch("/search/" + encodeURIComponent(app.searchTerm));
         const respObj = await resp.json();

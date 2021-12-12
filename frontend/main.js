@@ -61,7 +61,7 @@ let app = new Vue({
       },
       onPlaySongFromSearch: async function(event) {
         console.log(event.target.textContent.trim());
-        const url = "/playsong/" + encodeURIComponent(event.target.textContent.trim());
+        const url = "/playsong" + encodeURIComponent(event.target.textContent.trim());
         let resp = await fetch(url);
         app.state = await resp.json();
       },
@@ -127,7 +127,7 @@ let app = new Vue({
         app.state = await resp.json();
       },
       onAddSongFromSearch: async function(event) {
-        const resp = await fetch("/appendsong/" + encodeURIComponent(event.target.nextElementSibling.textContent.trim()));
+        const resp = await fetch("/appendsong" + encodeURIComponent(event.target.nextElementSibling.textContent.trim()));
         app.state = await resp.json();
       },
       onAddCurrentFolderClick: async function(event) {

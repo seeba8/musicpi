@@ -97,9 +97,13 @@ def appendsong(subpath):
 
 
 def create_playlist(folder):
+    count = 0
     for (dirpath, _, filenames) in os.walk(folder):
         for f in filenames:
             if f[f.rfind(".")+1:] in ALLOWED_EXTENSIONS:
+                count += 1
+                if count > 100:
+                    return
                 OMXD.append_to_playlist(dirpath + os.sep + f)
             #playlist.writelines([dirpath + os.sep + f + "\n" for f in filenames if f[f.rfind(".")+1:] in allowed_extensions])
 
